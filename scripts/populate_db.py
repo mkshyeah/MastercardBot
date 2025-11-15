@@ -72,7 +72,7 @@ def populate_transactions():
             chunk_df['transaction_timestamp'] = pd.to_datetime(chunk_df['transaction_timestamp'])
 
             # Загружаем обработанную часть в БД
-            chunk_df.to_sql('transactions', con=engine, if_exists='append', index=False)
+            chunk_df.to_sql('transactions', con=engine, if_exists='append', index=False, method='multi')
             total_rows += len(chunk_df)
 
         end_time = time.time()
