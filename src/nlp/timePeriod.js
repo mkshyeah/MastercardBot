@@ -1,4 +1,3 @@
-// timePeriod.js
 export function detectTimePeriod(text) {
   const lower = text.toLowerCase();
 

@@ -1,12 +1,22 @@
-// filters.js
 import { detectTimePeriod } from "./timePeriod.js";
 
-export function detectFilters(text, merchantsList = []) {
+export function detectFilters(text, merchantsList = [], language = "ru") {
   const lower = text.toLowerCase();
   const filters = [];
 
-  // страна (пример только Kazakhstan)
-  if (lower.includes("kazakhstan") || lower.includes("казахстан")) {
+  const kazakhstanSynonyms = {
+    ru: ["казахстан"],
+    en: ["kazakhstan"],
+    kz: ["қазақстан", "kazakstan"],
+  };
+
+  const currentLangSyns = kazakhstanSynonyms[language] || [];
+
+  const isKazakhstanMentioned = currentLangSyns.some((s) =>
+    lower.includes(s.toLowerCase())
+  );
+
+  if (isKazakhstanMentioned) {
     filters.push({
       field: "country",
       operator: "=",
@@ -14,7 +24,6 @@ export function detectFilters(text, merchantsList = []) {
     });
   }
 
-  // мерчанты — из списка, который тебе даст Человек А
   merchantsList.forEach((m) => {
     if (lower.includes(m.toLowerCase())) {
       filters.push({
@@ -25,8 +34,8 @@ export function detectFilters(text, merchantsList = []) {
     }
   });
 
-  // период
-  const period = detectTimePeriod(text);
+  const period = detectTimePeriod(text, language);
+
   if (period) {
     filters.push({
       field: "time_period",

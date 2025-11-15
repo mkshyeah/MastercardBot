@@ -1,4 +1,3 @@
-// limit.js
 export function detectLimit(text) {
   const lower = text.toLowerCase();
 
