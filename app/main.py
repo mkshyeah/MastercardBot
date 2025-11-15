@@ -1,3 +1,4 @@
+import decimal
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -29,33 +30,21 @@ def health_check():
     return {"status": "ok"}
 
 @app.post("/query", response_model=schemas.QueryResponse, tags=["Query"])
-def execute_query(query_request: schemas.QueryRequest, db: Session = Depends(get_db)):
+def execute_query(query_request: schemas.QueryRequest):
     """
-    Принимает структурированный запрос, строит SQL, выполняет его и возвращает результат.
+    Принимает текстовый запрос, запускает LangChain-цепочку и возвращает результат.
     """
-    # Шаг 1: Построить SQL-запрос (пока с помощью заглушки)
-    sql_query = sql_builder.build_sql_query(query_request)
+    try:
+        # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
+        chain_result = sql_builder.run_full_chain(query_request)
 
-    # Шаг 2: Выполнить SQL-запрос (ЗАГЛУШКА)
-    # В реальности мы бы выполнили запрос, но пока БД загружается, вернем фейковый результат.
-    # try:
-    #     result_proxy = db.execute(text(sql_query))
-    #     column_names = result_proxy.keys()
-    #     result = [dict(zip(column_names, row)) for row in result_proxy.fetchall()]
-    # except Exception as e:
-    #     raise HTTPException(status_code=400, detail=f"Error executing SQL query: {e}")
+        # "result" теперь будет списком словарей с одним элементом, чтобы соответствовать схеме
+        response_result = [{"summary_result": chain_result["summary"]}]
 
-    # Фейковый результат для тестирования
-    result = [
-        {"metric": "some_value", "group": "group_a"},
-        {"metric": "another_value", "group": "group_b"}
-    ]
-
-    # Шаг 3: Сгенерировать текстовый саммари (пока заглушка)
-    summary = f"Successfully executed query for: '{query_request.user_query}'"
-
-    return schemas.QueryResponse(
-        sql_query=sql_query,
-        result=result,
-        summary=summary
-    )
+        return schemas.QueryResponse(
+            sql_query=chain_result["sql_query"],
+            result=response_result,
+            summary=chain_result["summary"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,44 +1,40 @@
+from langchain_community.utilities import SQLDatabase
+from langchain_openai import OpenAI
+from langchain_experimental.sql import SQLDatabaseChain # <-- ВАШ ПРАВИЛЬНЫЙ ИМПОРТ
+
+from app.core.config import DATABASE_URL, OPENAI_API_KEY
 from app.core.schemas import QueryRequest
 
-def build_sql_query(query_request: QueryRequest) -> str:
-    """
-    ЭТО ЗАГЛУШКА!
-    В будущем здесь будет вызов LangChain.
-    Пока что она просто генерирует примерный SQL для демонстрации.
-    """
-    metrics = ", ".join(query_request.metrics)
-    
-    # --- ИЗМЕНЕНИЕ: Инициализируем переменные здесь ---
-    group_by_clause = ""
-    limit_clause = ""
-    where_clause = ""
+# Инициализируем подключение к БД
+db = SQLDatabase.from_uri(DATABASE_URL)
 
-    if query_request.group_by:
-        group_by_clause = "GROUP BY " + ", ".join(query_request.group_by)
-    
-    if query_request.limit:
-        limit_clause = f"LIMIT {query_request.limit}"
-        
-    # Очень упрощенная логика фильтров для примера
-    if query_request.filters:
-        filter_parts = []
-        for f in query_request.filters:
-            # В реальности здесь будет сложная обработка
-            if isinstance(f.value, str):
-                filter_parts.append(f"{f.field} {f.operator} '{f.value}'")
-            else:
-                filter_parts.append(f"{f.field} {f.operator} {f.value}")
-        if filter_parts:
-            where_clause = "WHERE " + " AND ".join(filter_parts)
+# Инициализируем LLM
+llm = OpenAI(temperature=0, verbose=True, openai_api_key=OPENAI_API_KEY)
 
-    # Собираем все вместе
-    sql_query = f"""
-    SELECT {metrics}
-    FROM transactions t
-    LEFT JOIN merchants m ON t.merchant_id = m.id
-    {where_clause}
-    {group_by_clause}
-    {limit_clause};
-    """.strip()
-    
-    return sql_query
+# Создаем цепочку, которая будет делать ВСЮ работу
+db_chain = SQLDatabaseChain.from_llm(
+    llm,
+    db,
+    verbose=True,
+    use_query_checker=True,
+    return_intermediate_steps=True
+)
+
+def run_full_chain(query_request: QueryRequest) -> dict:
+    user_question = query_request.user_query
+    result = db_chain.invoke(user_question)
+
+    sql_query = "SQL query not found."
+    # Проходим по всем промежуточным шагам
+    if result.get('intermediate_steps'):
+        for step in result['intermediate_steps']:
+            # Ищем шаг, который является словарем и содержит ключ 'sql_cmd'
+            if isinstance(step, dict) and 'sql_cmd' in step:
+                sql_query = step['sql_cmd']
+                break # Нашли, выходим из цикла
+
+    # Формируем красивый и чистый ответ
+    return {
+        "sql_query": sql_query.replace('\n', ' ').strip(),
+        "summary": str(result.get('result', 'No summary generated.')).strip()
+    }
