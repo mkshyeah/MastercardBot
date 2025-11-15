@@ -1,85 +1,91 @@
 import React, { useState } from "react";
 
-export const LanguageSwitcher = ({
-  language,
-  onChange,
-  selectName,
-  selectId,
-}) => {
-  const languages = [
-    { value: "ru", label: "RU" },
-    { value: "en", label: "EN" },
-    { value: "kz", label: "KZ" },
-  ];
-
-  return (
-    <select
-      name={selectName}
-      id={selectId}
-      className="bg-[#B8936D] w-auto p-1 custom-select rounded-[5px] font-medium"
-      value={language}
-      onChange={(e) => onChange && onChange(e.target.value)}
-    >
-      {languages.map((lang) => (
-        <option key={lang.value} value={lang.value}>
-          {lang.label}
-        </option>
-      ))}
-    </select>
-  );
+const CARD_CONFIG = {
+  standard: {
+    title: "standard",
+    bg: "#c28a55",
+    textColor: "#ffffff",
+  },
+  world: {
+    title: "world",
+    bg: "#153852",
+    textColor: "#ffffff",
+  },
+  platinum: {
+    title: "platinum",
+    bg: "#b3b5ba",
+    textColor: "#ffffff",
+  },
+  elite: {
+    title: "world elite",
+    bg: "#18191b",
+    textColor: "#ffffff",
+  },
 };
 
-export const QueryInput = (props) => {
-  const {
-    name,
-    id,
-    inputText = "",
-    btnText = "",
-    onRun,
-    language = "ru",
-    onLanguageChange,
-  } = props;
+export const QueryInput = ({ name, id, inputText, btnText, onRun }) => {
+  const [value, setValue] = useState(inputText || "");
 
-  const [value, setValue] = useState(inputText);
+  const [cardType, setCardType] = useState("standard");
 
-  const handleClick = () => {
-    if (onRun) {
-      onRun(value);
-    }
+  const currentCard = CARD_CONFIG[cardType] ?? CARD_CONFIG.standard;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!value.trim()) return;
+    onRun(value.trim());
   };
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col justify-between items-start w-[400px] h-[250px] bg-[#B8936D] rounded-xl gap-3 shadow-xl p-5">
-        <div className="flex flex-col w-full items-end justify-end">
-          <div className="relative flex items-center justify-end w-full">
-            <div className="w-12 h-12 bg-[#FF4B3E] opacity-90 border border-red-500 rounded-full absolute -translate-x-8"></div>
-            <div className="w-12 h-12 bg-[#FFB347] rounded-full"></div>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md">
+      {/* выбор типа / цвета карты */}
+      <select
+        value={cardType}
+        onChange={(e) => setCardType(e.target.value)}
+        className="mb-2 w-40 rounded-lg bg-[#fff6db] px-3 py-2 text-sm shadow-xs"
+      >
+        <option value="standard">Standard</option>
+        <option value="elite">World Elite</option>
+        <option value="world">World</option>
+        <option value="platinum">Platinum</option>
+      </select>
+
+      {/* карточка — только фон и цвет текста  */}
+      <div
+        className="rounded-3xl p-6 shadow-xl transition-colors duration-300 relative"
+        style={{
+          backgroundColor: currentCard.bg,
+          color: currentCard.textColor,
+        }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-lg font-medium">{currentCard.title}</div>
+          <div className="flex items-center gap-1">
+            <span className="w-10 h-10 rounded-full bg-[#eb001b]" />
+            <span className="w-10 h-10 rounded-full bg-[#f79e1b] -ml-3 opacity-90" />
           </div>
-          <span>mastercard</span>
         </div>
-        <textarea
-          name={name}
-          id={id}
-          className="w-full h-full bg-amber-50 p-2 rounded-2xl"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Введите запрос..."
-        />
-      </div>
-      <div className="flex w-full justify-between">
-        <LanguageSwitcher
-          language={language}
-          onChange={onLanguageChange}
-          selectName="language"
-          selectId="language"
-        />
+
+        {/* поле ввода */}
+        <div className="bg-[#fff6db] rounded-2xl p-3 mb-4">
+          <textarea
+            id={id}
+            name={name}
+            className="w-full bg-transparent outline-none resize-none text-sm text-black"
+            placeholder="Введите запрос..."
+            rows={4}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        </div>
+
         <button
-          className="px-5 py-2 bg-[#B8936D] w-[150px] rounded-[5px]"
-          onClick={handleClick}
+          type="submit"
+          className="px-6 py-2 rounded-lg bg-[#b57a45] text-white text-sm font-medium"
         >
           {btnText}
         </button>
       </div>
-    </div>
+    </form>
   );
 };

@@ -1,8 +1,9 @@
 import decimal
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from typing import List
+from typing import List, Optional, Any
 
 from .database import connection, models
 from .core import schemas # <-- Импортируем схемы
@@ -12,6 +13,21 @@ app = FastAPI(
     title="Agentic Analyst API",
     description="API for converting natural language to SQL queries.",
     version="0.1.0"
+)
+
+# Настройка CORS
+origins = [
+    "http://localhost",
+    "http://localhost:5173",  # Адрес фронтенда Vite
+    "http://localhost:3000",  # Адрес фронтенда (если Create React App)
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Функция для получения сессии БД
@@ -35,15 +51,11 @@ def execute_query(query_request: schemas.QueryRequest):
     Принимает текстовый запрос, запускает LangChain-цепочку и возвращает результат.
     """
     try:
-        # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
         chain_result = sql_builder.run_full_chain(query_request)
-
-        # "result" теперь будет списком словарей с одним элементом, чтобы соответствовать схеме
-        response_result = [{"summary_result": chain_result["summary"]}]
 
         return schemas.QueryResponse(
             sql_query=chain_result["sql_query"],
-            result=response_result,
+            result=chain_result["result"],
             summary=chain_result["summary"]
         )
     except Exception as e:

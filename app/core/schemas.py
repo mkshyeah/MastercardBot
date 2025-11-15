@@ -9,7 +9,7 @@ class Filter(BaseModel):
 
 # --- Схема для входящего запроса от NLP-модуля ---
 class QueryRequest(BaseModel):
-    metrics: List[str]
+    metrics: Optional[List[str]] = None
     group_by: Optional[List[str]] = None
     filters: Optional[List[Filter]] = None
     limit: Optional[int] = None
