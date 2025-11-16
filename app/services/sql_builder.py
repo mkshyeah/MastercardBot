@@ -26,9 +26,9 @@ db = SQLDatabase.from_uri(DATABASE_URL)
 # Инициализируем LLM
 llm = OpenAI(temperature=0, verbose=True, openai_api_key=OPENAI_API_KEY)
 
-# --- 2. УДАЛИ ANSWER_PROMPT ---
+# --- 2. УДАЛИ `ANSWER_PROMPT` ---
 
-# --- 3. УБЕРИ prompt=ANSWER_PROMPT ОТСЮДА ---
+# --- 3. УБЕРИ `prompt=ANSWER_PROMPT` ОТСЮДА ---
 db_chain = SQLDatabaseChain.from_llm(
     llm,
     db,
@@ -37,7 +37,7 @@ db_chain = SQLDatabaseChain.from_llm(
     return_intermediate_steps=True
 )
 
-# --- 4. ЗАМЕНИ ФУНКЦИЮ run_full_chain ---
+# --- 4. ЗАМЕНИ ФУНКЦИЮ `run_full_chain` ---
 def run_full_chain(query_request: QueryRequest) -> dict:
     start_time = time.time()
     print(f"\n[TIMING] --- Chain started ---")
@@ -105,8 +105,7 @@ def run_full_chain(query_request: QueryRequest) -> dict:
             except Exception as e:
                 raw_result = [{"error": f"Failed to re-execute SQL: {str(e)}"}]
 
-
-total_end_time = time.time()
+    total_end_time = time.time()
     print(f"[TIMING] Total chain execution took: {total_end_time - start_time:.2f} seconds")
     print("[TIMING] --- Chain finished ---\n")
     return {
