@@ -20,4 +20,3 @@ class QueryResponse(BaseModel):
     sql_query: str
     result: List[dict]
     summary: str
-

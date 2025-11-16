@@ -15,6 +15,7 @@ from sqlalchemy.sql import text
 
 # --- КОНФИГУРАЦИЯ ---
 # Убедитесь, что пути к файлам верные
+<<<<<<< HEAD
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PARQUET_FILE_PATH = os.path.join(PROJECT_ROOT, "example_dataset.parquet")
 MERCHANTS_CSV_PATH = os.path.join(PROJECT_ROOT, "merchants.csv")
@@ -24,6 +25,11 @@ CHUNK_SIZE = 100000
 # Установите None, чтобы загрузить все данные.
 # Установим 50, чтобы загрузить примерно половину от ~104 частей для ускорения.
 MAX_CHUNKS_TO_LOAD = 50
+=======
+PARQUET_FILE_PATH = r"/Users/timurdanilov/Desktop/Creaton/MastercardBot/example_dataset.parquet"
+MERCHANTS_CSV_PATH = "merchants.csv"  # Этот файл нам предоставит Человек C
+CHUNK_SIZE = 100000  # Обрабатываем по 100,000 строк за раз для экономии памяти
+>>>>>>> 2dc8d2b (feat: Обновил UI и почистил комментарии в бэке)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

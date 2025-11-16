@@ -37,7 +37,14 @@ export const QueryInput = ({ name, id, inputText, btnText, onRun }) => {
   };
 
   return (
+<<<<<<< HEAD
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 w-full max-w-md">
+=======
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-3 w-full max-w-md"
+    >
+>>>>>>> 2dc8d2b (feat: Обновил UI и почистил комментарии в бэке)
       {/* выбор типа / цвета карты */}
       <select
         value={cardType}
@@ -60,6 +67,7 @@ export const QueryInput = ({ name, id, inputText, btnText, onRun }) => {
       >
         <div className="flex items-center justify-between mb-4">
           <div className="text-lg font-medium">{currentCard.title}</div>
+<<<<<<< HEAD
           <div className="flex items-center gap-1">
             <span className="w-10 h-10 rounded-full bg-[#eb001b]" />
             <span className="w-10 h-10 rounded-full bg-[#f79e1b] -ml-3 opacity-90" />
@@ -85,6 +93,38 @@ export const QueryInput = ({ name, id, inputText, btnText, onRun }) => {
         >
           {btnText}
         </button>
+=======
+        </div>
+
+        {/* поле ввода */}
+        <div className="bg-[#fff6db] rounded-2xl p-3 mb-4">
+          <textarea
+            id={id}
+            name={name}
+            className="w-full bg-transparent outline-none resize-none text-sm text-black"
+            placeholder="Введите запрос..."
+            rows={4}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        </div>
+
+        <div className="flex justify-between">
+          <button
+            type="submit"
+            className="px-6 py-2 rounded-lg bg-[#b57a45] text-white text-sm font-medium"
+          >
+            {btnText}
+          </button>
+          <div className="flex flex-col gap-2 items-center">
+            <div className="flex items-center gap-1">
+              <span className="w-10 h-10 rounded-full bg-[#eb001b] border border-red-600 -mr-3 opacity-80" />
+              <span className="w-10 h-10 rounded-full bg-[#f79e1b] " />
+            </div>
+            <span>mastercard</span>
+          </div>
+        </div>
+>>>>>>> 2dc8d2b (feat: Обновил UI и почистил комментарии в бэке)
       </div>
     </form>
   );
