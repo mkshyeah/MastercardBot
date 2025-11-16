@@ -1,6 +1,7 @@
 import json
 import ast
 from decimal import Decimal
+import time # Добавьте этот импорт
 
 # --- 1. ДОБАВЬ ЭТИ ИМПОРТЫ ---
 from sqlalchemy.orm import sessionmaker
@@ -38,6 +39,9 @@ db_chain = SQLDatabaseChain.from_llm(
 
 # --- 4. ЗАМЕНИ ФУНКЦИЮ `run_full_chain` ---
 def run_full_chain(query_request: QueryRequest) -> dict:
+    start_time = time.time()
+    print(f"\n[TIMING] --- Chain started ---")
+
     # --- ИЗМЕНЕНИЕ ЗДЕСЬ ---
     # Добавляем инструкцию прямо в конец вопроса пользователя
     enhanced_user_question = (
@@ -47,7 +51,11 @@ def run_full_chain(query_request: QueryRequest) -> dict:
     
     # --- 2. ДОБАВЛЯЕМ ОБРАБОТКУ ОШИБОК ---
     try:
+        chain_invoke_start = time.time()
+        print("[TIMING] Calling LangChain/OpenAI...")
         chain_response = db_chain.invoke(enhanced_user_question)
+        chain_invoke_end = time.time()
+        print(f"[TIMING] LangChain/OpenAI call took: {chain_invoke_end - chain_invoke_start:.2f} seconds")
     except ProgrammingError as e:
         # Если LangChain сгенерировал невалидный SQL, ловим ошибку здесь
         return {
@@ -80,6 +88,8 @@ def run_full_chain(query_request: QueryRequest) -> dict:
         # Убедимся, что это только SELECT-запрос для безопасности
         if "SELECT" in sql_query.upper():
             try:
+                db_exec_start = time.time()
+                print("[TIMING] Re-executing SQL query against local DB...")
                 Session = sessionmaker(bind=engine)
                 with Session() as session:
                     result_proxy = session.execute(text(sql_query))
@@ -90,9 +100,14 @@ def run_full_chain(query_request: QueryRequest) -> dict:
                         {key: (float(value) if isinstance(value, Decimal) else value) for key, value in zip(column_names, row)}
                         for row in result_proxy.fetchall()
                     ]
+                db_exec_end = time.time()
+                print(f"[TIMING] Local DB execution took: {db_exec_end - db_exec_start:.2f} seconds")
             except Exception as e:
                 raw_result = [{"error": f"Failed to re-execute SQL: {str(e)}"}]
 
+    total_end_time = time.time()
+    print(f"[TIMING] Total chain execution took: {total_end_time - start_time:.2f} seconds")
+    print("[TIMING] --- Chain finished ---\n")
     return {
         "sql_query": sql_query.replace('\n', ' ').strip(),
         "result": raw_result,
