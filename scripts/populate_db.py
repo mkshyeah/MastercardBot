@@ -23,7 +23,7 @@ CHUNK_SIZE = 100000
 # НОВАЯ НАСТРОЙКА: Ограничиваем количество частей для загрузки.
 # Установите None, чтобы загрузить все данные.
 # Установим 50, чтобы загрузить примерно половину от ~104 частей для ускорения.
-MAX_CHUNKS_TO_LOAD = 50
+MAX_CHUNKS_TO_LOAD = 10
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
